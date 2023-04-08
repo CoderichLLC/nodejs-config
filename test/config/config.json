@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "config.json",
+    "description": "JSON Configuration"
+  },
+  "lib": {
+    "name": "config.json"
+  }
+}

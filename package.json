@@ -1,0 +1,27 @@
+{
+  "name": "@coderich/config",
+  "main": "src/Config.js",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "!__mocks__"
+  ],
+  "scripts": {
+    "test": "jest --config=jest.config.js",
+    "lint": "eslint --config=.eslintrc ./",
+    "dev": "coderich-dev"
+  },
+  "devDependencies": {
+    "@coderich/dev": "0.0.14"
+  },
+  "dependencies": {
+    "flat": "5.0.2",
+    "js-yaml": "4.1.0",
+    "lodash.get": "4.4.2",
+    "lodash.merge": "4.6.2",
+    "lodash.set": "4.3.2"
+  }
+}
