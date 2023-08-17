@@ -42,6 +42,7 @@ module.exports = class Config {
    *
    * @param {string} key - A key in dot.notation or colon:notation
    * @param {*} value - A value to set at the provided key
+   * @returns {config} - The config instance for optional chaining
    */
   set(key, value) {
     set(this.#config, key.replace(/:/g, '.'), value);
@@ -53,6 +54,7 @@ module.exports = class Config {
    * Deep merge data and resolve all substitution values.
    *
    * @param {object} data - An object to deep merge with the config
+   * @returns {config} - The config instance for optional chaining
    */
   merge(data) {
     if (data != null) {
@@ -73,7 +75,7 @@ module.exports = class Config {
 
     // Traverse all the key/value pairs and special handle any default string substitution values
     Object.entries(Flat.flatten(this.#config)).forEach(([key, value]) => {
-      const $value = this.#substitute(value, this.#dictionary);
+      const $value = this.#substitute(value);
       if ($value === value || typeof $value !== 'string') return set(this.#data, key, $value);
       if ($value === 'undefined') return set(this.#data, key, undefined);
       if ($value === 'null') return set(this.#data, key, null);
@@ -86,32 +88,33 @@ module.exports = class Config {
   }
 
   /**
-   * Substitue a string value against a data dictionary.
+   * Substitue a string value against the data dictionary.
    *
    * @param {string} value - A string value to substitute
-   * @param {object} dictionary - A data dictionary used to substitute the value
    */
-  #substitute(value, dictionary, depth = 0) {
+  #substitute(value, defaultValue, depth = 0) {
     // Determine if substitution is allowed/needed
     if (value == null || typeof value !== 'string' || ++depth > 5 || !value.match(this.#substitutionRegex)) return value;
 
-    // Recursively substitute the value from the inside out
+    // Recursively substitute the value from the INSIDE OUT
     return this.#substitute(value.replace(this.#substitutionRegex, (el, val) => {
-      const [, namespace, tuple = ''] = val.match(/^(.*)?:(.*)$/) || [];
-      const [key, defaultValue] = tuple.split(',').map(t => t.trim());
-      return get(dictionary[namespace], key, defaultValue);
-    }), dictionary, depth);
+      const [, namespace, tuple = ''] = val.match(/^(.*?):(.*)$/) || [];
+      const [key, fallbackValue] = tuple.split(',').map(t => t.trim());
+      defaultValue = fallbackValue ?? defaultValue;
+      return get(this.#dictionary[namespace], key, defaultValue);
+    }), defaultValue, depth);
   }
 
   /**
-   * Print out the current config data.
+   * Pretty print the current config data.
    *
    * @param {boolean} [options.flat] - Print the config with keys flat
    * @param {boolean} [options.sort] - Print the config with keys sorted
    * @param {boolean} [options.debug] - Print the possible prolematic keys only
+   * @returns {string} - Formatted output from Util.inspect with colors
    */
   print(options = {}) {
-    const { flat = false, sort = false, debug = false } = options;
+    const { colors = true, flat = false, sort = false, debug = false } = options;
 
     // Format the config according to passed in options
     const data = Object.keys(Flat.flatten(this.#data)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
@@ -127,7 +130,7 @@ module.exports = class Config {
     }, {});
 
     // Pretty print!
-    return Util.inspect(Flat[flat ? 'flatten' : 'unflatten']({ config, data }), { depth: null, showHidden: false, colors: true });
+    return Util.inspect(Flat[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }), { depth: null, showHidden: false, colors });
   }
 
   /* ------------------------------------------------------------------------------------------------------ */
@@ -136,7 +139,7 @@ module.exports = class Config {
    * Parse environment variables.
    *
    * @param {[string]} [options.pick] - Specify an array of variables to pick (default pick all)
-   * @param {string} [options.delim="__"] - Specify the string delimitere (default "__")
+   * @param {string} [options.delim="__"] - Specify the string delimiter (default "__")
    * @returns {object} - An object with parsed environment variables
    */
   static parseEnv(options = {}) {
@@ -152,7 +155,7 @@ module.exports = class Config {
    * Parse all command line arguments.
    *
    * @param {[string]} [options.pick] - Specify an array of variables to pick (default pick all)
-   * @param {string} [options.delim="__"] - Specify the string delimitere (default "__")
+   * @param {string} [options.delim="__"] - Specify the string delimiter (default "__")
    * @returns {object} - An object with parsed command line arguments
    */
   static parseArgs(options = {}) {

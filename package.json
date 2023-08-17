@@ -14,14 +14,14 @@
     "lint": "eslint --config=.eslintrc ./",
     "dev": "coderich-dev"
   },
-  "devDependencies": {
-    "@coderich/dev": "0.0.14"
-  },
   "dependencies": {
     "flat": "5.0.2",
     "js-yaml": "4.1.0",
     "lodash.get": "4.4.2",
     "lodash.merge": "4.6.2",
     "lodash.set": "4.3.2"
+  },
+  "devDependencies": {
+    "@coderich/dev": "0.0.14"
   }
 }
