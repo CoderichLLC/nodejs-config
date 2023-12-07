@@ -1,11 +1,14 @@
 {
   "name": "@coderich/config",
   "main": "src/Config.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publishConfig": {
     "access": "public"
   },
-  "files": ["src", "!__mocks__"],
+  "files": [
+    "src",
+    "!__mocks__"
+  ],
   "scripts": {
     "test": "jest --config=jest.config.js",
     "lint": "eslint --config=.eslintrc ./",
