@@ -15,13 +15,15 @@ const merge = require('lodash.merge');
 module.exports = class Config {
   #data = {}; // The resolved config data
   #config = {}; // The config definition (left as-is)
-  #dictionary = { self: this.#config };
-  #substitutionRegex = /\${(?!.*?\$)(.*?)}/g;
+  #functions = {}; // Dictionary of @functions
+  #dictionary = { self: this.#config }; // Dictionary of lookup values for variable substitution
+  #substitutionRegex = /[$@]\{(?!.*?[$@])(.*?)}/g; // Will find inner-most substitution template
 
   /**
    * @param {object} [data] - An optional object to seed the configuration data
    */
-  constructor(data) {
+  constructor(data, functions = {}) {
+    this.#functions = functions;
     this.merge(data);
   }
 
@@ -88,21 +90,48 @@ module.exports = class Config {
   }
 
   /**
-   * Substitue a string value against the data dictionary.
+   * Substitue a string template against the data dictionary.
    *
-   * @param {string} value - A string value to substitute
+   * @param {string} template - A string template to substitute
+   * @returns {*} - The substituted value
    */
-  #substitute(value, defaultValue, depth = 0) {
-    // Determine if substitution is allowed/needed
-    if (value == null || typeof value !== 'string' || ++depth > 5 || !value.match(this.#substitutionRegex)) return value;
+  #substitute(template, defaultValue, depth = 0) {
+    // Keep track of the resolved value
+    let substitutedValue, isFinalSubstitution;
 
-    // Recursively substitute the value from the INSIDE OUT
-    return this.#substitute(value.replace(this.#substitutionRegex, (el, val) => {
+    // Determine if substitution is allowed/needed
+    if (template == null || typeof template !== 'string' || ++depth > 10 || !template.match(this.#substitutionRegex)) return template;
+
+    // Recursively substitute the template from the INSIDE OUT
+    const transformedValue = this.#substitute(template.replace(this.#substitutionRegex, (el, val) => {
+      const id = el.charAt(0);
       const [, namespace, tuple = ''] = val.match(/^(.*?):(.*)$/) || [];
-      const [key, fallbackValue] = tuple.split(',').map(t => t.trim());
-      defaultValue = fallbackValue ?? defaultValue;
-      return get(this.#dictionary[namespace], key, defaultValue);
+      const [key, ...args] = tuple.split(',').map(t => t.trim());
+      // isFinalSubstitution = template.match(/^[$@]{.*}$/g);
+      isFinalSubstitution = Boolean(template === `${id}{${val}}`);
+
+      switch (id) {
+        case '@': {
+          const $key = this.get(key, key);
+          const $args = args.map(k => this.get(k, k));
+          // console.log(key, $key);
+          substitutedValue = this.#functions[namespace]?.($key, ...$args);
+          break;
+        }
+        default: {
+          const fallbackValue = args.find(fb => fb !== undefined && fb !== 'undefined');
+          defaultValue = fallbackValue ?? defaultValue;
+          substitutedValue = get(this.#dictionary[namespace], key, defaultValue);
+          break;
+        }
+      }
+
+      return substitutedValue;
     }), defaultValue, depth);
+
+    // By default everything is a string substitution (eg '${sm:api.key}')
+    // By keeping track of the final resolution (substitutedValue) we honor it's type
+    return isFinalSubstitution && typeof substitutedValue !== 'string' ? substitutedValue : transformedValue;
   }
 
   /**
@@ -203,5 +232,13 @@ module.exports = class Config {
 
   static unflatten(...args) {
     return Flat.unflatten(...args);
+  }
+
+  static map = (mixed, fn) => {
+    if (mixed == null) return mixed;
+    const isArray = Array.isArray(mixed);
+    const arr = isArray ? mixed : [mixed];
+    const results = arr.map((...args) => fn(...args));
+    return isArray ? results : results[0];
   }
 };
