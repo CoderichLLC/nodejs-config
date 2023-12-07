@@ -1,7 +1,7 @@
 {
   "name": "@coderich/config",
   "main": "src/Config.js",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "publishConfig": {
     "access": "public"
   },
