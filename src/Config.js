@@ -1,6 +1,6 @@
 const FS = require('fs');
-const Util = require('util');
-const Flat = require('flat');
+const { inspect } = require('util');
+const Util = require('@coderich/util');
 const Yaml = require('js-yaml');
 const get = require('lodash.get');
 const set = require('lodash.set');
@@ -60,7 +60,7 @@ module.exports = class Config {
    */
   merge(data) {
     if (data != null) {
-      merge(this.#config, Flat.unflatten(data));
+      merge(this.#config, Util.unflatten(data));
       this.resolve();
     }
     return this;
@@ -76,7 +76,7 @@ module.exports = class Config {
     merge(this.#dictionary, dictionary);
 
     // Traverse all the key/value pairs and special handle any default string substitution values
-    Object.entries(Flat.flatten(this.#config)).forEach(([key, value]) => {
+    Object.entries(Util.flatten(this.#config, { strict: true })).forEach(([key, value]) => {
       const $value = this.#substitute(value);
       if ($value === value || typeof $value !== 'string') return set(this.#data, key, $value);
       if ($value === 'undefined') return set(this.#data, key, undefined);
@@ -146,20 +146,20 @@ module.exports = class Config {
     const { colors = true, flat = false, sort = false, debug = false } = options;
 
     // Format the config according to passed in options
-    const data = Object.keys(Flat.flatten(this.#data)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
+    const data = Object.keys(Util.flatten(this.#data)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
       const value = get(this.#data, key);
       if (!debug || value === undefined || `${value}`.match(this.#substitutionRegex)) return Object.assign(prev, { [key]: value });
       return prev;
     }, {});
 
-    const config = Object.keys(Flat.flatten(this.#config)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
+    const config = Object.keys(Util.flatten(this.#config)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
       const value = get(this.#config, key);
       if (!debug || value === undefined || `${value}`.match(this.#substitutionRegex)) return Object.assign(prev, { [key]: value });
       return prev;
     }, {});
 
     // Pretty print!
-    return Util.inspect(Flat[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }), { depth: null, showHidden: false, colors });
+    return inspect(Util[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }), { depth: null, showHidden: false, colors });
   }
 
   /* ------------------------------------------------------------------------------------------------------ */
@@ -175,7 +175,7 @@ module.exports = class Config {
     const { delim = '__', pick } = options;
     const keys = pick || Object.keys(process.env);
 
-    return Flat.unflatten(keys.reduce((prev, key) => {
+    return Util.unflatten(keys.reduce((prev, key) => {
       return Object.assign(prev, { [key.replace(new RegExp(delim, 'g'), '.')]: process.env[key] });
     }, {}));
   }
@@ -190,7 +190,7 @@ module.exports = class Config {
   static parseArgs(options = {}) {
     const { delim = '__', pick } = options;
 
-    return Flat.unflatten(process.argv.slice(2).reduce((prev, curr) => {
+    return Util.unflatten(process.argv.slice(2).reduce((prev, curr) => {
       const [key, value = 'true'] = curr.split('='); // The presence of a key with no value default to "true"
       const $key = key.replace(/^[^a-zA-z]*(.*)$/, '$1'); // Remove any leading nonsense from the key (eg. --key=value)
       if (pick && !pick.includes($key)) return prev;
@@ -224,21 +224,5 @@ module.exports = class Config {
     const content = FS.readFileSync(descriptor, ...args);
     FS.closeSync(descriptor);
     return content;
-  }
-
-  static flatten(...args) {
-    return Flat.flatten(...args);
-  }
-
-  static unflatten(...args) {
-    return Flat.unflatten(...args);
-  }
-
-  static map = (mixed, fn) => {
-    if (mixed == null) return mixed;
-    const isArray = Array.isArray(mixed);
-    const arr = isArray ? mixed : [mixed];
-    const results = arr.map((...args) => fn(...args));
-    return isArray ? results : results[0];
   }
 };

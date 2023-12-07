@@ -176,14 +176,6 @@ describe('Config', () => {
     expect(config.get('newData')).toEqual('test');
   });
 
-  test('Static methods', () => {
-    const obj = { a: { b: 'c' } };
-    const flat = Config.flatten(obj);
-    const unflat = Config.unflatten(flat);
-    expect(flat).toEqual({ 'a.b': 'c' });
-    expect(unflat).toEqual(obj);
-  });
-
   test('Mutating resolved variable', () => {
     expect(config.get('app.secret')).toEqual('foobar');
     secrets.atlas.apiPublicKey = 'hacked'; // This won't work because reference is lost
