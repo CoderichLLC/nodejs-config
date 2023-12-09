@@ -4,6 +4,7 @@ const Config = require('../src/Config');
 
 // Create a default config instance
 const config = new Config({
+  arr: [],
   env: '${env:GOZIO_ENV, dev}',
   self: {
     test: '${self:app.name}',
@@ -71,6 +72,7 @@ const baseAssert = () => {
 
 describe('Config', () => {
   test('config.get', () => {
+    expect(config.get('arr')).toEqual([]);
     expect(config.get('env')).toEqual('dev');
     expect(config.get('app.name')).toEqual('gozio-config');
     expect(config.get('app.selfRef')).toBe('gozio-config');
