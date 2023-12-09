@@ -24,6 +24,7 @@ const config = new Config({
     b: 'b',
     c: 'c',
     arr: ['${self:app.a}', '${self:app.b}', '${self:app.c}'],
+    arrRef: '${self:app.arr}',
     'tricky-self-name': 'tricky-${self:app.gozio-config}-${self:app.name}-${self:app.name}',
     'gozio-config': '${self:app.name}',
     secret: '${sm:atlas.apiPublicKey}',
@@ -68,6 +69,7 @@ const baseAssert = () => {
   expect(config.get('app.absoluteSingleQuote')).toBe("'hello'");
   expect(config.get('app.absoluteDoubleQuote')).toBe('"hello"');
   expect(config.get('app.arr')).toEqual(['a', 'b', 'c']);
+  expect(config.get('app.arrRef')).toEqual(['a', 'b', 'c']);
 };
 
 describe('Config', () => {

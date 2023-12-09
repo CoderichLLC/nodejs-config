@@ -131,7 +131,14 @@ module.exports = class Config {
 
     // By default everything is a string substitution (eg '${sm:api.key}')
     // By keeping track of the final resolution (substitutedValue) we honor it's type
-    return isFinalSubstitution && typeof substitutedValue !== 'string' ? substitutedValue : transformedValue;
+    // We have to traverse the object and resolve all it's internal attributes!
+    if (isFinalSubstitution && typeof substitutedValue !== 'string') {
+      return Util.unflatten(Object.entries(Util.flatten({ substitutedValue }, { strict: true })).reduce((prev, [key, value]) => {
+        return Object.assign(prev, { [key]: this.#substitute(value, defaultValue, depth) });
+      }, {})).substitutedValue;
+    }
+
+    return transformedValue;
   }
 
   /**
