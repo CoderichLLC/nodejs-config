@@ -36,7 +36,9 @@ module.exports = class Config {
    */
   get(key, defaultValue) {
     if (!key) return this.#data;
-    return get(this.#data, key.replace(/:/g, '.'), defaultValue);
+    const value = get(this.#data, key.replace(/:/g, '.'), defaultValue);
+    if (Util.isPlainObjectOrArray(value)) return this.#resolve(value);
+    return value?.match?.(this.#substitutionRegex) ? this.#substitute(value) : value;
   }
 
   /**
@@ -129,16 +131,22 @@ module.exports = class Config {
       return substitutedValue;
     }), defaultValue, depth);
 
-    // By default everything is a string substitution (eg '${sm:api.key}')
     // By keeping track of the final resolution (substitutedValue) we honor it's type
-    // We have to traverse the object and resolve all it's internal attributes!
-    if (isFinalSubstitution && typeof substitutedValue !== 'string') {
-      return Util.unflatten(Object.entries(Util.flatten({ substitutedValue }, { strict: true })).reduce((prev, [key, value]) => {
-        return Object.assign(prev, { [key]: this.#substitute(value, defaultValue, depth) });
-      }, {})).substitutedValue;
-    }
+    return isFinalSubstitution && typeof substitutedValue !== 'string' ? substitutedValue : transformedValue;
 
-    return transformedValue;
+    // if (isFinalSubstitution && typeof substitutedValue !== 'string') {
+    //   return Util.unflatten(Object.entries(Util.flatten({ substitutedValue }, { strict: true })).reduce((prev, [key, value]) => {
+    //     return Object.assign(prev, { [key]: this.#substitute(value, defaultValue, depth) });
+    //   }, {})).substitutedValue;
+    // }
+
+    // return transformedValue;
+  }
+
+  #resolve(obj) {
+    return Util.unflatten(Object.entries(Util.flatten({ obj }, { strict: true })).reduce((prev, [key, value]) => {
+      return Object.assign(prev, { [key]: this.#substitute(value) });
+    }, {})).obj;
   }
 
   /**

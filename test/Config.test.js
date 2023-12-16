@@ -11,6 +11,7 @@ const config = new Config({
   },
   lib: {
     env: '${self:GOZIO_ENV, dev}',
+    $env: '${self:env}',
     utilities: {
       aws: {
         lambda: {
@@ -41,6 +42,7 @@ const config = new Config({
     anotherEnv: 'another-${self:env}',
     dynamicDefault: '${self:app.secret, ${self:lib.utilities.aws.lambda.locationResolver}}',
     dynamicHttpDefault: '${sm:auth0.audience, https://gozio-dev.auth0.com/api/v2/}',
+    lib: '${self:lib}',
   },
 });
 
@@ -192,7 +194,7 @@ describe('Config', () => {
     expect(arr).toEqual(['a', 'b', 'c']);
     arr.push('d');
     const arr2 = config.get('app.arr');
-    expect(arr2).toEqual(['a', 'b', 'c', 'd']);
+    expect(arr2).toEqual(['a', 'b', 'c']); // The reference is lost!
   });
 
   test('Dynamic object by reference (ref is lost!)', () => {
@@ -200,7 +202,24 @@ describe('Config', () => {
     config.set('app.object', obj);
     expect(config.get('app.object')).toEqual({ a: 'a' });
     obj.b = 'b';
-    expect(config.get('app.object')).toEqual({ a: 'a' }); // The reference is lost
+    expect(config.get('app.object')).toEqual({ a: 'a' }); // The reference is lost!
+  });
+
+  test('Object reference', () => {
+    expect(config.get('lib.$env')).toBe('test');
+    expect(config.get('app.lib.$env')).toBe('test');
+    expect(config.get('app.lib')).toEqual({
+      env: 'dev',
+      $env: 'test',
+      name: 'newName',
+      utilities: {
+        aws: {
+          lambda: {
+            locationResolver: 'location-resolver-dev',
+          },
+        },
+      },
+    });
   });
 
   test('Cannot resolve with "self" key', () => {
