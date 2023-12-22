@@ -12,6 +12,7 @@ const config = new Config({
   lib: {
     env: '${self:GOZIO_ENV, dev}',
     $env: '${self:env}',
+    app: '${self:app}',
     utilities: {
       aws: {
         lambda: {
@@ -212,6 +213,7 @@ describe('Config', () => {
       env: 'dev',
       $env: 'test',
       name: 'newName',
+      app: expect.any(Object),
       utilities: {
         aws: {
           lambda: {
@@ -220,6 +222,8 @@ describe('Config', () => {
         },
       },
     });
+    expect(config.get('app.lib.app.arr')).toEqual(['a', 'b', 'c']);
+    expect(config.get('app.lib.nothing.arr')).toBeUndefined();
   });
 
   test('Cannot resolve with "self" key', () => {

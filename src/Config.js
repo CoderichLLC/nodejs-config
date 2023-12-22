@@ -36,9 +36,15 @@ module.exports = class Config {
    */
   get(key, defaultValue) {
     if (!key) return this.#data;
-    const value = get(this.#data, key.replace(/:/g, '.'), defaultValue);
-    if (Util.isPlainObjectOrArray(value)) return this.#resolve(value);
-    return value?.match?.(this.#substitutionRegex) ? this.#substitute(value) : value;
+
+    const result = key.replace(/:/g, '.').split('.').reduce((data, k) => {
+      if (data == null) return data;
+      const value = data[k];
+      if (Util.isPlainObjectOrArray(value)) return this.#resolve(value);
+      return value?.match?.(this.#substitutionRegex) ? this.#substitute(value) : value;
+    }, this.#data);
+
+    return result === undefined ? defaultValue : result;
   }
 
   /**
@@ -116,7 +122,6 @@ module.exports = class Config {
         case '@': {
           const $key = this.get(key, key);
           const $args = args.map(k => this.get(k, k));
-          // console.log(key, $key);
           substitutedValue = this.#functions[namespace]?.($key, ...$args);
           break;
         }
