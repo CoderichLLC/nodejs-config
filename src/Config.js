@@ -182,6 +182,15 @@ module.exports = class Config {
     return inspect(Util[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }), { depth: null, showHidden: false, colors });
   }
 
+  toObject() {
+    return {
+      data: this.#data,
+      config: this.#config,
+      functions: this.#functions,
+      dictionary: this.#dictionary,
+    };
+  }
+
   /* ------------------------------------------------------------------------------------------------------ */
 
   /**
