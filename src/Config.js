@@ -4,6 +4,7 @@ const Util = require('@coderich/util');
 const Yaml = require('js-yaml');
 const get = require('lodash.get');
 const set = require('lodash.set');
+const unset = require('lodash.unset');
 const merge = require('lodash.merge');
 
 /**
@@ -56,6 +57,14 @@ module.exports = class Config {
    */
   set(key, value) {
     set(this.#config, key.replace(/:/g, '.'), value);
+    this.resolve();
+    return this;
+  }
+
+  /**
+   */
+  del(key) {
+    unset(this.#config, key.replace(/:/g, '.'));
     this.resolve();
     return this;
   }

@@ -44,7 +44,10 @@ const config = new Config({
     dynamicDefault: '${self:app.secret, ${self:lib.utilities.aws.lambda.locationResolver}}',
     dynamicHttpDefault: '${sm:auth0.audience, https://gozio-dev.auth0.com/api/v2/}',
     lib: '${self:lib}',
+    bool: '@{eq:${self:app.name}, gozio-config}',
   },
+}, {
+  eq: (a, b) => Boolean(a === b),
 });
 
 //
@@ -89,6 +92,7 @@ describe('Config', () => {
     expect(config.get('app.tricky-self-name')).toEqual('tricky-gozio-config-gozio-config-gozio-config');
     expect(config.get('app.dynamicDefault')).toEqual('location-resolver-dev');
     expect(config.get('app.dynamicHttpDefault')).toEqual('https://gozio-dev.auth0.com/api/v2/');
+    expect(config.get('app.bool')).toBe(true);
 
     expect(config.get()).toMatchObject({
       config: 'jest.config.js',
@@ -123,6 +127,7 @@ describe('Config', () => {
     config.merge(Config.parseFile(`${__dirname}/config/config.yml`));
     expect(config.get('lib.name')).toEqual('config.yml');
     expect(config.get('app.name')).toEqual('config.yml');
+    expect(config.get('app.bool')).toBe(false);
     expect(config.get('app.description')).toEqual('YML Configuration');
     expect(config.get('app.gozio-config')).toEqual('config.yml');
     expect(config.get('app.tricky-self-name')).toEqual('tricky-config.yml-config.yml-config.yml');
@@ -132,6 +137,7 @@ describe('Config', () => {
     config.merge(Config.parseFile(`${__dirname}/config/config.json`));
     expect(config.get('lib.name')).toEqual('config.json');
     expect(config.get('app.name')).toEqual('config.json');
+    expect(config.get('app.bool')).toBe(false);
     expect(config.get('app.description')).toEqual('JSON Configuration');
     expect(config.get('app.gozio-config')).toEqual('config.json');
     expect(config.get('app.tricky-self-name')).toEqual('tricky-config.json-config.json-config.json');
@@ -141,6 +147,7 @@ describe('Config', () => {
     config.merge(Config.parseFile(`${__dirname}/config/config.js`));
     expect(config.get('lib.name')).toEqual('config.js');
     expect(config.get('app.name')).toEqual('config.js');
+    expect(config.get('app.bool')).toBe(false);
     expect(config.get('app.description')).toEqual('JS Configuration');
     expect(config.get('app.nothing', 'hello world')).toEqual('hello world');
     expect(config.get('app.gozio-config')).toEqual('config.js');
