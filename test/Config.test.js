@@ -202,7 +202,7 @@ describe('Config', () => {
     expect(arr).toEqual(['a', 'b', 'c']);
     arr.push('d');
     const arr2 = config.get('app.arr');
-    expect(arr2).toEqual(['a', 'b', 'c']); // The reference is lost!
+    expect(arr2).toEqual(['a', 'b', 'c', 'd']); // The reference is kept!
   });
 
   test('Dynamic object by reference (ref is lost!)', () => {
@@ -210,7 +210,14 @@ describe('Config', () => {
     config.set('app.object', obj);
     expect(config.get('app.object')).toEqual({ a: 'a' });
     obj.b = 'b';
-    expect(config.get('app.object')).toEqual({ a: 'a' }); // The reference is lost!
+    expect(config.get('app.object')).toEqual({ a: 'a' }); // Because obj is declared outside of config!
+  });
+
+  test('Mutating objects (get ref)', () => {
+    const obj = config.get('app.object');
+    expect(obj).toEqual({ a: 'a' });
+    obj.b = 'b';
+    expect(config.get('app.object')).toEqual({ a: 'a', b: 'b' }); // The reference is kept!
   });
 
   test('Object reference', () => {
@@ -229,7 +236,7 @@ describe('Config', () => {
         },
       },
     });
-    expect(config.get('app.lib.app.arr')).toEqual(['a', 'b', 'c']);
+    expect(config.get('app.lib.app.arr')).toEqual(['a', 'b', 'c', 'd']);
     expect(config.get('app.lib.nothing.arr')).toBeUndefined();
   });
 

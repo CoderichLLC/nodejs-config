@@ -37,15 +37,7 @@ module.exports = class Config {
    */
   get(key, defaultValue) {
     if (!key) return this.#data;
-
-    const result = key.replace(/:/g, '.').split('.').reduce((data, k) => {
-      if (data == null) return data;
-      const value = data[k];
-      if (Util.isPlainObjectOrArray(value)) return this.#resolve(value);
-      return value?.match?.(this.#substitutionRegex) ? this.#substitute(value) : value;
-    }, this.#data);
-
-    return result === undefined ? defaultValue : result;
+    return get(this.#data, key.replace(/:/g, '.'), defaultValue);
   }
 
   /**
@@ -64,7 +56,9 @@ module.exports = class Config {
   /**
    */
   del(key) {
-    unset(this.#config, key.replace(/:/g, '.'));
+    key = key.replace(/:/g, '.');
+    unset(this.#data, key);
+    unset(this.#config, key);
     this.resolve();
     return this;
   }
@@ -77,7 +71,8 @@ module.exports = class Config {
    */
   merge(data) {
     if (data != null) {
-      merge(this.#config, Util.unflatten(data));
+      merge(this.#data, data);
+      merge(this.#config, data);
       this.resolve();
     }
     return this;
@@ -124,7 +119,6 @@ module.exports = class Config {
       const id = el.charAt(0);
       const [, namespace, tuple = ''] = val.match(/^(.*?):(.*)$/) || [];
       const [key, ...args] = tuple.split(',').map(t => t.trim());
-      // isFinalSubstitution = template.match(/^[$@]{.*}$/g);
       isFinalSubstitution = Boolean(template === `${id}{${val}}`);
 
       switch (id) {
@@ -142,25 +136,12 @@ module.exports = class Config {
         }
       }
 
+      if (Util.isPlainObjectOrArray(substitutedValue)) substitutedValue = get(this.#data, key, defaultValue);
       return substitutedValue;
     }), defaultValue, depth);
 
     // By keeping track of the final resolution (substitutedValue) we honor it's type
     return isFinalSubstitution && typeof substitutedValue !== 'string' ? substitutedValue : transformedValue;
-
-    // if (isFinalSubstitution && typeof substitutedValue !== 'string') {
-    //   return Util.unflatten(Object.entries(Util.flatten({ substitutedValue }, { strict: true })).reduce((prev, [key, value]) => {
-    //     return Object.assign(prev, { [key]: this.#substitute(value, defaultValue, depth) });
-    //   }, {})).substitutedValue;
-    // }
-
-    // return transformedValue;
-  }
-
-  #resolve(obj) {
-    return Util.unflatten(Object.entries(Util.flatten({ obj }, { strict: true })).reduce((prev, [key, value]) => {
-      return Object.assign(prev, { [key]: this.#substitute(value) });
-    }, {})).obj;
   }
 
   /**
@@ -172,10 +153,10 @@ module.exports = class Config {
    * @returns {string} - Formatted output from Util.inspect with colors
    */
   print(options = {}) {
-    const { colors = true, flat = false, sort = false, debug = false } = options;
+    const { colors = true, flat = false, sort = false, debug = false, depth = 3 } = options;
 
     // Format the config according to passed in options
-    const data = Object.keys(Util.flatten(this.#data)).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
+    const data = Object.keys(Util.flatten(this.#data, { depth })).sort((a, b) => (sort ? a.localeCompare(b) : 0)).reduce((prev, key) => {
       const value = get(this.#data, key);
       if (!debug || value === undefined || `${value}`.match(this.#substitutionRegex)) return Object.assign(prev, { [key]: value });
       return prev;
