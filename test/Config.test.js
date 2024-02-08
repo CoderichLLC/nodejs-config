@@ -244,6 +244,12 @@ describe('Config', () => {
     expect(() => config.resolve({ self: 'blah' })).toThrow(/reserved key/gi);
   });
 
+  test('delayed merge of data', () => {
+    config.merge({ 'very.nested.object': { a: 'a', b: ['b'] } });
+    config.merge({ 'app.delayed': ['${self:very.nested.object}'] });
+    expect(config.get('app.delayed')).toEqual([{ a: 'a', b: ['b'] }]);
+  });
+
   test('print', () => {
     expect(config.print()).toBeDefined();
   });

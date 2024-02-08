@@ -71,8 +71,9 @@ module.exports = class Config {
    */
   merge(data) {
     if (data != null) {
-      merge(this.#data, data);
-      merge(this.#config, data);
+      const $data = Util.unflatten(data);
+      merge(this.#data, $data);
+      merge(this.#config, $data);
       this.resolve();
     }
     return this;
