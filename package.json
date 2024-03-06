@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@coderich/util": "^1.0.2",
-    "flat": "5.0.2",
     "js-yaml": "4.1.0",
     "lodash.get": "4.4.2",
     "lodash.merge": "4.6.2",
