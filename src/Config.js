@@ -3,7 +3,6 @@ const { inspect } = require('util');
 const Util = require('@coderich/util');
 const Yaml = require('js-yaml');
 const get = require('lodash.get');
-const set = require('lodash.set');
 const unset = require('lodash.unset');
 const merge = require('lodash.merge');
 
@@ -48,7 +47,7 @@ module.exports = class Config {
    * @returns {config} - The config instance for optional chaining
    */
   set(key, value) {
-    set(this.#config, key.replace(/:/g, '.'), value);
+    Util.set(this.#config, key.replace(/:/g, '.'), value);
     this.resolve();
     return this;
   }
@@ -91,12 +90,12 @@ module.exports = class Config {
     // Traverse all the key/value pairs and special handle any default string substitution values
     Object.entries(Util.flatten(this.#config, { strict: true })).forEach(([key, value]) => {
       const $value = this.#substitute(value);
-      if ($value === value || typeof $value !== 'string') return set(this.#data, key, $value);
-      if ($value === 'undefined') return set(this.#data, key, undefined);
-      if ($value === 'null') return set(this.#data, key, null);
-      if ($value === 'true') return set(this.#data, key, true);
-      if ($value === 'false') return set(this.#data, key, false);
-      return set(this.#data, key, $value.replace(/^['"](.*)['"]$/, '$1'));
+      if ($value === value || typeof $value !== 'string') return Util.set(this.#data, key, $value);
+      if ($value === 'undefined') return Util.set(this.#data, key, undefined);
+      if ($value === 'null') return Util.set(this.#data, key, null);
+      if ($value === 'true') return Util.set(this.#data, key, true);
+      if ($value === 'false') return Util.set(this.#data, key, false);
+      return Util.set(this.#data, key, $value.replace(/^['"](.*)['"]$/, '$1'));
     });
 
     return this;
