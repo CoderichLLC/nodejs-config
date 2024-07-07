@@ -169,7 +169,7 @@ module.exports = class Config {
     }, {});
 
     // Pretty print!
-    return inspect(Util[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }), { depth: null, showHidden: false, colors });
+    return inspect(Util[flat ? 'flatten' : 'unflatten']({ config, data, dictionary: this.#dictionary }, { depth }), { depth: null, showHidden: false, colors });
   }
 
   toObject() {
