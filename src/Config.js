@@ -232,6 +232,10 @@ module.exports = class Config {
     }
   }
 
+  static parseYaml(yaml) {
+    return Yaml.load(yaml);
+  }
+
   /**
    * Synchronously read file from a path.
    *

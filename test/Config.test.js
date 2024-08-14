@@ -253,4 +253,18 @@ describe('Config', () => {
   test('print', () => {
     expect(config.print()).toBeDefined();
   });
+
+  test('Config.parseYaml', () => {
+    expect(Config.parseYaml(`
+      my:
+        nested:
+         array: [1,2,3]
+    `)).toEqual({
+      my: {
+        nested: {
+          array: [1, 2, 3],
+        },
+      },
+    });
+  });
 });
