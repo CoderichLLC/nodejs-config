@@ -5,6 +5,7 @@ const Config = require('../src/Config');
 // Create a default config instance
 const config = new Config({
   arr: [],
+  bug: '${mobileApp:name}-${context:lang}-${self:env}',
   env: '${env:GOZIO_ENV, dev}',
   self: {
     test: '${self:app.name}',
@@ -82,6 +83,7 @@ describe('Config', () => {
   test('config.get', () => {
     expect(config.get('arr')).toEqual([]);
     expect(config.get('env')).toEqual('dev');
+    expect(config.get('bug')).toEqual('undefined-undefined-dev');
     expect(config.get('app.name')).toEqual('gozio-config');
     expect(config.get('app.selfRef')).toBe('gozio-config');
     expect(config.get('self.test')).toBe('gozio-config');

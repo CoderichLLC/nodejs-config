@@ -17,7 +17,7 @@ module.exports = class Config {
   #config = {}; // The config definition (left as-is)
   #functions = {}; // Dictionary of @functions
   #dictionary = { self: this.#config }; // Dictionary of lookup values for variable substitution
-  #substitutionRegex = /[$@]\{(?!.*?[$@])(.*?)}/g; // Will find inner-most substitution template
+  #substitutionRegex = /[$@]\{([^{$@}]+?)}/g; // Will find inner-most substitution template
 
   /**
    * @param {object} [data] - An optional object to seed the configuration data
