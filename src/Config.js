@@ -132,11 +132,11 @@ module.exports = class Config {
           const fallbackValue = args.find(fb => fb !== undefined && fb !== 'undefined');
           defaultValue = fallbackValue ?? defaultValue;
           substitutedValue = get(this.#dictionary[namespace], key, defaultValue);
+          if (Util.isPlainObjectOrArray(substitutedValue)) substitutedValue = get(this.#data, key, defaultValue);
           break;
         }
       }
 
-      if (Util.isPlainObjectOrArray(substitutedValue)) substitutedValue = get(this.#data, key, defaultValue);
       return substitutedValue;
     }), defaultValue, depth);
 
