@@ -207,19 +207,19 @@ describe('Config', () => {
     expect(arr2).toEqual(['a', 'b', 'c', 'd']); // The reference is kept!
   });
 
-  test('Dynamic object by reference (ref is lost!)', () => {
+  test('Dynamic object by reference', () => {
     const obj = { a: 'a' };
     config.set('app.object', obj);
     expect(config.get('app.object')).toEqual({ a: 'a' });
     obj.b = 'b';
-    expect(config.get('app.object')).toEqual({ a: 'a' }); // Because obj is declared outside of config!
+    expect(config.get('app.object')).toEqual({ a: 'a', b: 'b' });
   });
 
   test('Mutating objects (get ref)', () => {
     const obj = config.get('app.object');
-    expect(obj).toEqual({ a: 'a' });
-    obj.b = 'b';
-    expect(config.get('app.object')).toEqual({ a: 'a', b: 'b' }); // The reference is kept!
+    expect(obj).toEqual({ a: 'a', b: 'b' });
+    obj.c = 'c';
+    expect(config.get('app.object')).toEqual({ a: 'a', b: 'b', c: 'c' });
   });
 
   test('Object reference', () => {
@@ -250,6 +250,14 @@ describe('Config', () => {
     config.merge({ 'very.nested.object': { a: 'a', b: ['b'] } });
     config.merge({ 'app.delayed': ['${self:very.nested.object}'] });
     expect(config.get('app.delayed')).toEqual([{ a: 'a', b: ['b'] }]);
+  });
+
+  test('change value outside of set', () => {
+    const data = config.get();
+    data.app.a = 'not-a';
+    expect(config.get('app.a')).toBe('not-a');
+    config.set('app.b', 'b'); // this calls resolve()!
+    expect(config.get('app.a')).toBe('not-a');
   });
 
   test('print', () => {

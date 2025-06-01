@@ -47,7 +47,9 @@ module.exports = class Config {
    * @returns {config} - The config instance for optional chaining
    */
   set(key, value) {
-    Util.set(this.#config, key.replace(/:/g, '.'), value);
+    key = key.replace(/:/g, '.');
+    Util.set(this.#data, key, value);
+    Util.set(this.#config, key, value);
     this.resolve();
     return this;
   }
@@ -88,7 +90,7 @@ module.exports = class Config {
     merge(this.#dictionary, dictionary);
 
     // Traverse all the key/value pairs and special handle any default string substitution values
-    Object.entries(Util.flatten(this.#config, { strict: true })).forEach(([key, value]) => {
+    Object.entries(Util.flatten(this.#config, { strict: true })).filter(([k, v]) => v?.match?.(this.#substitutionRegex)).forEach(([key, value]) => {
       const $value = this.#substitute(value);
       if ($value === value || typeof $value !== 'string') return Util.set(this.#data, key, $value);
       if ($value === 'undefined') return Util.set(this.#data, key, undefined);
