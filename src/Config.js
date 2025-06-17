@@ -35,8 +35,8 @@ module.exports = class Config {
    * @returns {*} - A value by key or entire config when key is omitted
    */
   get(key, defaultValue) {
-    if (!key) return this.#data;
-    return get(this.#data, key.replace(/:/g, '.'), defaultValue);
+    if (key === undefined) return this.#data;
+    return get(this.#data, key?.replace(/:/g, '.'), defaultValue);
   }
 
   /**

@@ -81,6 +81,8 @@ const baseAssert = () => {
 
 describe('Config', () => {
   test('config.get', () => {
+    expect(config.get(null)).toBeUndefined();
+    expect(config.get(null, 'default')).toBe('default');
     expect(config.get('arr')).toEqual([]);
     expect(config.get('env')).toEqual('dev');
     expect(config.get('bug')).toEqual('undefined-undefined-dev');
