@@ -1,3 +1,6 @@
+## 2.0.0
+- Node22 engine
+
 ## 1.4.0
 - Config.get will no longer return full config if null value is passed in
 

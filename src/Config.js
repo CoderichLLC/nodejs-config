@@ -125,9 +125,7 @@ module.exports = class Config {
 
       switch (id) {
         case '@': {
-          const $key = this.get(key, key);
-          const $args = args.map(k => this.get(k, k));
-          substitutedValue = this.#functions[namespace]?.($key, ...$args);
+          substitutedValue = this.#functions[namespace]?.(key, ...args);
           break;
         }
         default: {
@@ -227,7 +225,7 @@ module.exports = class Config {
    */
   static parseFile(filepath) {
     switch (filepath.split('.').pop().toLowerCase()) {
-      case 'js': return require(filepath); // eslint-disable-line import/no-dynamic-require, global-require
+      case 'js': return require(filepath);
       case 'yml': case 'yaml': return Yaml.load(Config.#readFileSync(filepath, 'utf8'));
       case 'json': return JSON.parse(Config.#readFileSync(filepath, 'utf8'));
       default: throw new Error(`Unsupported file type ${filepath}`);

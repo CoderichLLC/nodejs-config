@@ -11,17 +11,17 @@
   ],
   "scripts": {
     "test": "jest --config=jest.config.js",
-    "lint": "eslint --config=.eslintrc ./",
+    "lint": "eslint ./",
     "dev": "coderich-dev"
   },
   "dependencies": {
-    "@coderich/util": "^1.0.6",
+    "@coderich/util": "2.0.1",
     "js-yaml": "4.1.0",
     "lodash.get": "4.4.2",
     "lodash.merge": "4.6.2",
     "lodash.unset": "4.5.2"
   },
   "devDependencies": {
-    "@coderich/dev": "0.2.1"
+    "@coderich/dev": "0.5.2"
   }
 }

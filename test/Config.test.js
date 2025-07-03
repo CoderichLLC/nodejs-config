@@ -46,9 +46,11 @@ const config = new Config({
     dynamicHttpDefault: '${sm:auth0.audience, https://gozio-dev.auth0.com/api/v2/}',
     lib: '${self:lib}',
     bool: '@{eq:${self:app.name}, gozio-config}',
+    concat: '@{concat:${self:app.arr}, ${self:env}}',
   },
 }, {
   eq: (a, b) => Boolean(a === b),
+  concat: (a, ...b) => a.split(',').concat(b),
 });
 
 //
@@ -97,6 +99,7 @@ describe('Config', () => {
     expect(config.get('app.dynamicDefault')).toEqual('location-resolver-dev');
     expect(config.get('app.dynamicHttpDefault')).toEqual('https://gozio-dev.auth0.com/api/v2/');
     expect(config.get('app.bool')).toBe(true);
+    expect(config.get('app.concat')).toEqual(['a', 'b', 'c', 'dev']);
 
     expect(config.get()).toMatchObject({
       config: 'jest.config.js',
