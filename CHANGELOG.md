@@ -1,3 +1,7 @@
+## 2.2.0
+- Added static dirPaths method
+- Support for ignore option for dirPaths and parseDir
+
 ## 2.1.0
 - Added static parseDir method
 

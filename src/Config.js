@@ -233,15 +233,31 @@ module.exports = class Config {
     }
   }
 
-  static parseDir(dir, filter = fn => !fn.startsWith('.')) {
-    return FS.readdirSync(dir).filter(filter).reduce((prev, filename) => {
-      const { name } = Path.parse(filename);
+  static parseDir(dir, ignored = ({ name }) => name.startsWith('.')) {
+    return FS.readdirSync(dir).reduce((prev, filename) => {
       const filepath = `${dir}/${filename}`;
+      const parsed = Path.parse(filepath);
       const stat = FS.statSync(filepath);
-      if (stat?.isDirectory()) return Object.assign(prev, { [name]: Config.parseDir(filepath) });
+      const { name } = parsed;
+
+      if (ignored(parsed)) return prev;
+      if (stat?.isDirectory()) return Object.assign(prev, { [name]: Config.parseDir(filepath, ignored) });
       if (name === 'index') return Object.assign(prev, Config.parseFile(filepath));
       return Object.assign(prev, { [name]: Config.parseFile(filepath) });
     }, {});
+  }
+
+  static dirPaths(dir, ignored = ({ name }) => name.startsWith('.'), paths = []) {
+    return FS.readdirSync(dir).reduce((prev, filename) => {
+      const filepath = `${dir}/${filename}`;
+      const parsed = Path.parse(filepath);
+      const stat = FS.statSync(filepath);
+      const $paths = parsed.name === 'index' ? paths : paths.concat(parsed.name);
+
+      if (ignored(parsed)) return prev;
+      if (stat?.isDirectory()) return prev.concat(...Config.dirPaths(filepath, ignored, $paths));
+      return prev.concat({ paths: $paths, data: Config.#readFileSync(filepath, 'utf8') });
+    }, []);
   }
 
   static parseYaml(yaml) {
