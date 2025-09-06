@@ -1,3 +1,6 @@
+## 2.1.0
+- Added static parseDir method
+
 ## 2.0.0
 - Node22 engine
 

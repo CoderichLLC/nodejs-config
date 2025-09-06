@@ -1,4 +1,5 @@
 const FS = require('fs');
+const Path = require('path');
 const { inspect } = require('util');
 const Util = require('@coderich/util');
 const Yaml = require('js-yaml');
@@ -224,12 +225,23 @@ module.exports = class Config {
    * @returns {object} - A fully parsed data object
    */
   static parseFile(filepath) {
-    switch (filepath.split('.').pop().toLowerCase()) {
+    switch (filepath.split('.').at(-1).toLowerCase()) {
       case 'js': return require(filepath);
       case 'yml': case 'yaml': return Yaml.load(Config.#readFileSync(filepath, 'utf8'));
       case 'json': return JSON.parse(Config.#readFileSync(filepath, 'utf8'));
       default: throw new Error(`Unsupported file type ${filepath}`);
     }
+  }
+
+  static parseDir(dir, filter = fn => !fn.startsWith('.')) {
+    return FS.readdirSync(dir).filter(filter).reduce((prev, filename) => {
+      const { name } = Path.parse(filename);
+      const filepath = `${dir}/${filename}`;
+      const stat = FS.statSync(filepath);
+      if (stat?.isDirectory()) return Object.assign(prev, { [name]: Config.parseDir(filepath) });
+      if (name === 'index') return Object.assign(prev, Config.parseFile(filepath));
+      return Object.assign(prev, { [name]: Config.parseFile(filepath) });
+    }, {});
   }
 
   static parseYaml(yaml) {

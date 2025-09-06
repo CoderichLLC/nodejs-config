@@ -5,6 +5,7 @@ const Config = require('../src/Config');
 // Create a default config instance
 const config = new Config({
   arr: [],
+  fullObject: '${context:fullObject}',
   bug: '${mobileApp:name}-${context:lang}-${self:env}',
   env: '${env:GOZIO_ENV, dev}',
   self: {
@@ -172,11 +173,12 @@ describe('Config', () => {
     baseAssert();
 
     // Add more to sm (test that it does not clobber dictionary)
-    config.resolve({ sm: { atlas: { more: 'attributes' } } });
+    config.resolve({ sm: { atlas: { more: 'attributes' } }, context: { fullObject: { name: 'coderich' } } });
     expect(config.get('app.secret')).toEqual('foobar');
     expect(config.get('app.secret2')).toEqual('config.js');
     expect(config.get('env')).toEqual('test');
     expect(config.get('app.anotherEnv')).toEqual('another-test');
+    // expect(config.get('fullObject')).toEqual({ name: 'coderich' });
     baseAssert();
   });
 
