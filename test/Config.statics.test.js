@@ -9,6 +9,13 @@ describe('Config statics', () => {
         dir: { a: 'a' },
         folder: { b: 'b' },
         person: { name: 'coderich' },
+        level1: {
+          level2: {
+            level3: {
+              found: 'treasure',
+            },
+          },
+        },
       },
       config: {
         app: {
@@ -45,6 +52,7 @@ describe('Config statics', () => {
         dir: { a: 'a' },
         folder: { b: 'b' },
       },
+      'nested.level1.level2.level3': { found: 'treasure' },
       config: {
         app: {
           name: 'config.yml',

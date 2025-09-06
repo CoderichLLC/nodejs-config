@@ -234,7 +234,7 @@ module.exports = class Config {
   }
 
   static parseDir(dir, ignored = ({ name }) => name.startsWith('.')) {
-    return FS.readdirSync(dir).reduce((prev, filename) => {
+    return Config.#readdirSyncSorted(dir).reduce((prev, filename) => {
       const filepath = `${dir}/${filename}`;
       const parsed = Path.parse(filepath);
       const stat = FS.statSync(filepath);
@@ -248,7 +248,7 @@ module.exports = class Config {
   }
 
   static dirPaths(dir, ignored = ({ name }) => name.startsWith('.'), paths = []) {
-    return FS.readdirSync(dir).reduce((prev, filename) => {
+    return Config.#readdirSyncSorted(dir).reduce((prev, filename) => {
       const filepath = `${dir}/${filename}`;
       const parsed = Path.parse(filepath);
       const stat = FS.statSync(filepath);
@@ -275,5 +275,19 @@ module.exports = class Config {
     const content = FS.readFileSync(descriptor, ...args);
     FS.closeSync(descriptor);
     return content;
+  }
+
+  static #readdirSyncSorted(dir) {
+    return FS.readdirSync(dir).sort((a, b) => {
+      const aIsDir = FS.statSync(`${dir}/${a}`).isDirectory();
+      const bIsDir = FS.statSync(`${dir}/${b}`).isDirectory();
+
+      // files first, then dirs
+      if (aIsDir && !bIsDir) return 1;
+      if (!aIsDir && bIsDir) return -1;
+
+      // tie → alphabetical by name
+      return a.localeCompare(b);
+    });
   }
 };
