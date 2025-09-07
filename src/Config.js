@@ -65,6 +65,11 @@ module.exports = class Config {
     return this;
   }
 
+  flush() {
+    this.#data = {};
+    return this;
+  }
+
   /**
    * Deep merge data and resolve all substitution values.
    *
@@ -233,15 +238,16 @@ module.exports = class Config {
     }
   }
 
-  static parseDir(dir, ignored = ({ name }) => name.startsWith('.')) {
+  static parseDir(dir, ignored = ({ name }) => name.startsWith('.'), paths = []) {
     return Config.#readdirSyncSorted(dir).reduce((prev, filename) => {
       const filepath = `${dir}/${filename}`;
       const parsed = Path.parse(filepath);
       const stat = FS.statSync(filepath);
       const { name } = parsed;
+      const $paths = name === 'index' ? paths : paths.concat(name);
 
-      if (ignored(parsed)) return prev;
-      if (stat?.isDirectory()) return Object.assign(prev, { [name]: Config.parseDir(filepath, ignored) });
+      if (ignored({ ...parsed, filepath, paths: $paths })) return prev;
+      if (stat?.isDirectory()) return Object.assign(prev, { [name]: Config.parseDir(filepath, ignored, $paths) });
       if (name === 'index') return Object.assign(prev, Config.parseFile(filepath));
       return Object.assign(prev, { [name]: Config.parseFile(filepath) });
     }, {});
@@ -254,7 +260,7 @@ module.exports = class Config {
       const stat = FS.statSync(filepath);
       const $paths = parsed.name === 'index' ? paths : paths.concat(parsed.name);
 
-      if (ignored(parsed)) return prev;
+      if (ignored({ ...parsed, filepath, paths: $paths })) return prev;
       if (stat?.isDirectory()) return prev.concat(...Config.dirPaths(filepath, ignored, $paths));
       return prev.concat({ paths: $paths, data: Config.#readFileSync(filepath, 'utf8') });
     }, []);
