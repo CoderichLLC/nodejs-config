@@ -135,10 +135,25 @@ module.exports = class Config {
           break;
         }
         default: {
+          let deleteDefaultValue = false;
           const fallbackValue = args.find(fb => fb !== undefined && fb !== 'undefined');
           defaultValue = fallbackValue ?? defaultValue;
-          substitutedValue = get(this.#dictionary[namespace], key, defaultValue);
-          if (Util.isPlainObjectOrArray(substitutedValue)) substitutedValue = get(this.#data, key, defaultValue);
+          substitutedValue = get(this.#dictionary[namespace], key);
+
+          if (substitutedValue === undefined) {
+            substitutedValue = defaultValue;
+            deleteDefaultValue = true;
+          }
+
+          if (Util.isPlainObjectOrArray(substitutedValue)) {
+            substitutedValue = get(this.#data, key);
+            if (substitutedValue === undefined) {
+              substitutedValue = defaultValue;
+              deleteDefaultValue = true;
+            }
+          }
+
+          if (deleteDefaultValue) defaultValue = undefined;
           break;
         }
       }

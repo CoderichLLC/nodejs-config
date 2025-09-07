@@ -48,6 +48,7 @@ const config = new Config({
     lib: '${self:lib}',
     bool: '@{eq:${self:app.name}, gozio-config}',
     concat: '@{concat:${self:app.arr}, ${self:env}}',
+    token: '${self:${self:env}.loginResponse.access_token}',
   },
 }, {
   eq: (a, b) => Boolean(a === b),
@@ -101,6 +102,7 @@ describe('Config', () => {
     expect(config.get('app.dynamicHttpDefault')).toEqual('https://gozio-dev.auth0.com/api/v2/');
     expect(config.get('app.bool')).toBe(true);
     expect(config.get('app.concat')).toEqual(['a', 'b', 'c', 'dev']);
+    expect(config.get('app.token')).toBeUndefined();
 
     expect(config.get()).toMatchObject({
       config: 'jest.config.js',
