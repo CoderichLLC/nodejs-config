@@ -6,8 +6,8 @@ const Config = require('../src/Config');
 const config = new Config({
   arr: [],
   fullObject: '${context:fullObject}',
-  bug: '${mobileApp:name}-${context:lang}-${self:env}',
   env: '${env:GOZIO_ENV, dev}',
+  bug: '${self:env}-${mobileApp:name}-${context:lang}-${self:env}',
   self: {
     test: '${self:app.name}',
   },
@@ -88,7 +88,7 @@ describe('Config', () => {
     expect(config.get(null, 'default')).toBe('default');
     expect(config.get('arr')).toEqual([]);
     expect(config.get('env')).toEqual('dev');
-    expect(config.get('bug')).toEqual('undefined-undefined-dev');
+    expect(config.get('bug')).toEqual('dev-undefined-undefined-dev');
     expect(config.get('app.name')).toEqual('gozio-config');
     expect(config.get('app.selfRef')).toBe('gozio-config');
     expect(config.get('self.test')).toBe('gozio-config');
@@ -170,6 +170,8 @@ describe('Config', () => {
     expect(config.get('app.dynamicDefault')).toEqual('foobar'); // woot!
     expect(config.get('env')).toEqual('test');
     expect(config.get('app.anotherEnv')).toEqual('another-test');
+    config.resolve({ sm: secrets, env: { GOZIO_ENV: process.env.GOZIO_ENV }, context: { lang: 'en' }, mobileApp: { name: 'appName' } });
+    expect(config.get('bug')).toEqual('test-appName-en-test');
     baseAssert();
 
     // Add more to sm (test that it does not clobber dictionary)

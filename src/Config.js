@@ -37,7 +37,7 @@ module.exports = class Config {
    */
   get(key, defaultValue) {
     if (key === undefined) return this.#data;
-    return get(this.#data, key?.replace(/:/g, '.'), defaultValue);
+    return get(this.#data, key?.replace?.(/:/g, '.'), defaultValue);
   }
 
   /**
@@ -48,7 +48,7 @@ module.exports = class Config {
    * @returns {config} - The config instance for optional chaining
    */
   set(key, value) {
-    key = key.replace(/:/g, '.');
+    key = key.replace?.(/:/g, '.');
     Util.set(this.#data, key, value);
     Util.set(this.#config, key, value);
     this.resolve();
@@ -58,7 +58,7 @@ module.exports = class Config {
   /**
    */
   del(key) {
-    key = key.replace(/:/g, '.');
+    key = key.replace?.(/:/g, '.');
     unset(this.#data, key);
     unset(this.#config, key);
     this.resolve();
