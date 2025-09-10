@@ -50,9 +50,14 @@ const config = new Config({
     concat: '@{concat:${self:app.arr}, ${self:env}}',
     token: '${self:${self:env}.loginResponse.access_token}',
   },
+  outer: { join: 'to-me' },
+  openai: '${self:@{join:outer, join, .}}',
+  $home: 'home',
+  home: '${self:$home}',
 }, {
   eq: (a, b) => Boolean(a === b),
   concat: (a, ...b) => a.split(',').concat(b),
+  join: (...args) => args.slice(0, -1).join(args.at(-1)),
 });
 
 //
@@ -287,5 +292,10 @@ describe('Config', () => {
         },
       },
     });
+  });
+
+  test('complicated nesting', () => {
+    expect(config.get('openai')).toEqual('to-me');
+    expect(config.get('home')).toEqual('home');
   });
 });

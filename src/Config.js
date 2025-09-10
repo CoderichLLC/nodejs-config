@@ -18,7 +18,7 @@ module.exports = class Config {
   #config = {}; // The config definition (left as-is)
   #functions = {}; // Dictionary of @functions
   #dictionary = { self: this.#config }; // Dictionary of lookup values for variable substitution
-  #substitutionRegex = /[$@]\{([^{$@}]+?)}/g; // Will find inner-most substitution template
+  #substitutionRegex = /[$@]\{([^{}]+)}/g; // Will find inner-most substitution template
 
   /**
    * @param {object} [data] - An optional object to seed the configuration data
@@ -98,12 +98,7 @@ module.exports = class Config {
     // Traverse all the key/value pairs and special handle any default string substitution values
     Object.entries(Util.flatten(this.#config, { strict: true })).filter(([k, v]) => v?.match?.(this.#substitutionRegex)).forEach(([key, value]) => {
       const $value = this.#substitute(value);
-      if ($value === value || typeof $value !== 'string') return Util.set(this.#data, key, $value);
-      if ($value === 'undefined') return Util.set(this.#data, key, undefined);
-      if ($value === 'null') return Util.set(this.#data, key, null);
-      if ($value === 'true') return Util.set(this.#data, key, true);
-      if ($value === 'false') return Util.set(this.#data, key, false);
-      return Util.set(this.#data, key, $value.replace(/^['"](.*)['"]$/, '$1'));
+      return Util.set(this.#data, key, typeof $value === 'string' ? Config.#coerce($value) : $value);
     });
 
     return this;
@@ -131,7 +126,7 @@ module.exports = class Config {
 
       switch (id) {
         case '@': {
-          substitutedValue = this.#functions[namespace]?.(key, ...args);
+          substitutedValue = this.#functions[namespace]?.(key, ...args.map(Config.#coerce));
           break;
         }
         default: {
@@ -283,6 +278,16 @@ module.exports = class Config {
 
   static parseYaml(yaml) {
     return Yaml.load(yaml);
+  }
+
+  static #coerce(s) {
+    if (s === 'undefined') return undefined;
+    if (s === 'null') return null;
+    if (s === 'true') return true;
+    if (s === 'false') return false;
+    // const num = Number(s);
+    // if (!Number.isNaN(num) && String(num) === s) return num;
+    return s?.replace?.(/^['"](.*)['"]$/, '$1');
   }
 
   /**
