@@ -50,7 +50,7 @@ module.exports = class Config {
   set(key, value) {
     key = key.replace?.(/:/g, '.');
     Util.set(this.#data, key, value);
-    Util.set(this.#config, key, value);
+    Util.set(this.#config, key, structuredClone(value));
     this.resolve();
     return this;
   }
@@ -80,7 +80,7 @@ module.exports = class Config {
     if (data != null) {
       const $data = Util.unflatten(data);
       merge(this.#data, $data);
-      merge(this.#config, $data);
+      merge(this.#config, structuredClone($data));
       this.resolve();
     }
     return this;
