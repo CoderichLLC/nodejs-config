@@ -22,6 +22,10 @@
     "lodash.unset": "4.5.2"
   },
   "devDependencies": {
-    "@coderich/dev": "0.5.2"
+    "@coderich/dev": "0.6.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/CoderichLLC/nodejs-config.git"
   }
 }
