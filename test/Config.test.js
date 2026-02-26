@@ -187,7 +187,7 @@ describe('Config', () => {
     expect(config.get('app.secret2')).toEqual('config.js');
     expect(config.get('env')).toEqual('test');
     expect(config.get('app.anotherEnv')).toEqual('another-test');
-    // expect(config.get('fullObject')).toEqual({ name: 'coderich' });
+    expect(config.get('fullObject')).toEqual({ name: 'coderich' });
     baseAssert();
   });
 

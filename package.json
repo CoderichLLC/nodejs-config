@@ -15,8 +15,8 @@
     "dev": "coderich-dev"
   },
   "dependencies": {
-    "@coderich/util": "2.0.1",
-    "js-yaml": "4.1.0",
+    "@coderich/util": "2.1.5",
+    "js-yaml": "4.1.1",
     "lodash.get": "4.4.2",
     "lodash.merge": "4.6.2",
     "lodash.unset": "4.5.2"
