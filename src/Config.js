@@ -126,7 +126,7 @@ module.exports = class Config {
 
       switch (id) {
         case '@': {
-          substitutedValue = this.#functions[namespace]?.(key, ...args.map(Config.#coerce));
+          substitutedValue = this.#functions[namespace]?.(Config.#coerce(key), ...args.map(Config.#coerce));
           break;
         }
         default: {
@@ -140,7 +140,7 @@ module.exports = class Config {
             deleteDefaultValue = true;
           }
 
-          if (Util.isPlainObjectOrArray(substitutedValue)) {
+          if (Util.isPlainObjectOrArray(substitutedValue) && namespace === 'self') {
             substitutedValue = get(this.#data, key);
             if (substitutedValue === undefined) {
               substitutedValue = defaultValue;
