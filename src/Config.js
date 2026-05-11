@@ -1,6 +1,6 @@
-const FS = require('fs');
-const Path = require('path');
-const { inspect } = require('util');
+const FS = require('node:fs');
+const Path = require('node:path');
+const { inspect } = require('node:util');
 const Util = require('@coderich/util');
 const Yaml = require('js-yaml');
 const get = require('lodash.get');

@@ -1,5 +1,5 @@
-const FS = require('fs');
-const Path = require('path');
+const FS = require('node:fs');
+const Path = require('node:path');
 const Config = require('../src/Config');
 
 describe('Config statics', () => {

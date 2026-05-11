@@ -15,14 +15,14 @@
     "dev": "coderich-dev"
   },
   "dependencies": {
-    "@coderich/util": "2.1.5",
+    "@coderich/util": "2.2.3",
     "js-yaml": "4.1.1",
     "lodash.get": "4.4.2",
     "lodash.merge": "4.6.2",
     "lodash.unset": "4.5.2"
   },
   "devDependencies": {
-    "@coderich/dev": "0.6.1"
+    "@coderich/dev": "0.6.3"
   },
   "repository": {
     "type": "git",
