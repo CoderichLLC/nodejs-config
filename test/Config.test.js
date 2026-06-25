@@ -298,4 +298,42 @@ describe('Config', () => {
     expect(config.get('openai')).toEqual('to-me');
     expect(config.get('home')).toEqual('home');
   });
+
+  describe('Config resolve { replace }', () => {
+    // An optional substitution key (request.params.id) that may be present on one resolve and absent
+    const TEMPLATE = '${request:params.id, ${context:credentials.patient}}';
+    const context = { credentials: { patient: 'CRED' } };
+
+    test('default merge leaks a stale optional key across resolves', () => {
+      const c = new Config({ patientId: TEMPLATE });
+      c.resolve({ request: { params: { id: 'REQ1' } }, context });
+      expect(c.get('patientId')).toBe('REQ1');
+
+      // Second resolve omits id; merge cannot clear an absent key, so the stale value leaks.
+      c.resolve({ request: { params: {} }, context });
+      expect(c.get('patientId')).toBe('REQ1');
+    });
+
+    test('{ replace: true } replaces the namespace wholesale, dropping stale optional keys', () => {
+      const c = new Config({ patientId: TEMPLATE });
+      c.resolve({ request: { params: { id: 'REQ1' } }, context });
+      expect(c.get('patientId')).toBe('REQ1');
+
+      c.resolve({ request: { params: {} }, context }, { replace: true });
+      expect(c.get('patientId')).toBe('CRED');
+    });
+
+    test('{ replace: true } only replaces the passed namespaces; others persist', () => {
+      const c = new Config({ token: '${context:credentials.access_token}', secret: '${sm:atlas}' });
+      c.resolve({ sm: { atlas: 'SECRET' } }); // resolved once, earlier
+      c.resolve({ context: { credentials: { access_token: 'TOK' } } }, { replace: true });
+      expect(c.get('token')).toBe('TOK');
+      expect(c.get('secret')).toBe('SECRET'); // replacing `context` must not drop `sm`
+    });
+
+    test('{ replace: true } still rejects the reserved "self" key', () => {
+      const c = new Config({ a: '${self:b}', b: 'B' });
+      expect(() => c.resolve({ self: 'x' }, { replace: true })).toThrow(/reserved key/gi);
+    });
+  });
 });

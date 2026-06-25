@@ -91,9 +91,10 @@ module.exports = class Config {
    *
    * @param {object} [dictionary = {self:config}] - An object with key:value pairs that match variable namespace:data substitutions
    */
-  resolve(dictionary = {}) {
+  resolve(dictionary = {}, options = {}) {
     if (dictionary.self) throw new Error('Cannot use reserved key "self"');
-    merge(this.#dictionary, dictionary);
+    if (options.replace) Object.keys(dictionary).forEach((namespace) => { this.#dictionary[namespace] = dictionary[namespace]; });
+    else merge(this.#dictionary, dictionary);
 
     // Traverse all the key/value pairs and special handle any default string substitution values
     Object.entries(Util.flatten(this.#config, { strict: true })).filter(([k, v]) => v?.match?.(this.#substitutionRegex)).forEach(([key, value]) => {

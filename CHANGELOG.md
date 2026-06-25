@@ -1,3 +1,6 @@
+## 2.3.0
+- Added support for resolve with options.replace to replace dictionary keys
+
 ## 2.2.0
 - Added static dirPaths method
 - Support for ignore option for dirPaths and parseDir
