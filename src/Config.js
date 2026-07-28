@@ -286,8 +286,8 @@ module.exports = class Config {
     if (s === 'null') return null;
     if (s === 'true') return true;
     if (s === 'false') return false;
-    // const num = Number(s);
-    // if (!Number.isNaN(num) && String(num) === s) return num;
+    const num = Number(s);
+    if (!Number.isNaN(num) && String(num) === s) return num;
     return s?.replace?.(/^['"](.*)['"]$/, '$1');
   }
 
