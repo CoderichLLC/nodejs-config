@@ -1,3 +1,7 @@
+## 2.4.0
+- Coercing int type
+- Updated deps/vulns
+
 ## 2.3.0
 - Added support for resolve with options.replace to replace dictionary keys
 

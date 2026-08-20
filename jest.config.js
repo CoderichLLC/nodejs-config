@@ -2,6 +2,7 @@
 
 module.exports = {
   verbose: true,
+  maxWorkers: 1,
   testTimeout: 20000,
   testEnvironment: 'node',
   collectCoverage: false,
